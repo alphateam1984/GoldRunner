@@ -20,8 +20,7 @@ function main(){
 //=========================================declarations:=======================================
 
 
-var walkBlocks=new Array();
-var Images=new Array();
+
 var imageIndex=0;
 global=this;
 var currentStage=1;
@@ -29,6 +28,8 @@ var currentStage=1;
 var bCountX=0;  //count of the blocks on x axis.
 var bCountY=0;
 
+var walkBlocks=new Array();
+var Images=new Array();
 var obsImage =new Array(); //list of obstacle images, all in <div> mode.
 var grids=new Array();  //a collection of grids,
     
@@ -41,6 +42,7 @@ var grids=new Array();  //a collection of grids,
     
     //items & misc:
     var itemlist=new Array();
+    var spotlist=new Array();
     
     var scores=0;
     var taskitem=new Array();
@@ -214,6 +216,12 @@ function initStage(stage)
 
 //===================================================general functions=========================
 //===================================================general functions=========================
+    function addSpot(x,y,number,script)
+    {
+        spotlist.push(new hotSpot(x,y,number,script));
+    }
+    
+    
     function addItem(x,y,code,score,taskCount,img,script)
     {
         itemlist.push(new itemClass(x,y,code,score,taskCount,img,script));
@@ -958,6 +966,42 @@ function gridClass(number)
 
     
 }
+
+
+function hotSpot(x,y,numberOfUse,script)
+{
+    this.x=x;
+    this.y=y;
+    this.numberOfUse=numberOfUse;
+    this.script=script;
+    this.enabled=true;
+    var that=this;
+    
+    this.drive=function ()
+    {
+        if(that.enabled===false)return;  //check enabled.
+        
+        if(player.x===that.x && player.y===that.y)
+        {
+            //hit the spot:
+            if(that.numberOfUse===0)
+            {
+                that.enabled=false;
+                
+            }
+            else 
+            {
+                //-1
+                if(that.numberOfUse>0)that.numberOfUse--;
+                if(that.script.length>0)    eval(that.script);
+            }
+                
+        }
+    };
+    
+}
+
+
 
 function itemClass(x,y,code,score,taskCount,img,script)
 {
