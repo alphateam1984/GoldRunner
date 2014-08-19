@@ -184,7 +184,7 @@ function initStage(stage)
                 //createEnemy(8,3,0); //0 means the skin id.
                 //createEnemy(2,3,0);
                 //createEnemy(7,1,0);
-                addItem(9,0,1,20,1,"gold1");
+                addItem(1,2,1,20,1,"gold1","msgDialog(150,150,'Hello World!');");
                 //addItem(3,0,1,20,1,"gold1");
                 addItem(8,4,1,20,1,"gold1",'addItem(0,4,1,20,1,"gold1");');                
                 
@@ -203,7 +203,7 @@ function initStage(stage)
         player.setFrame(1,1);
         
 
-        
+
 
 }
 
@@ -493,6 +493,92 @@ function initStage(stage)
     
     function gameOver()
     {
+        
+    }
+    
+    function msgDialog(x,y,text)
+    {
+        //return: null-nothing pressed or error
+        //1-ok
+        //2-cancel
+        //3-yes
+        //4-no
+        
+        var width=160;
+        var height=100;
+        if(text.length>16)
+        {
+            width=text.length*10;
+        }
+        document.getElementById("d5").innerHTML="<p align='middle'>"+text+"</p>";
+        showWindow(x,y,width,height);
+        var button=document.getElementById("ok");
+        button.style.left=width/2-43+"px";
+        button.style.top=height-16+"px";
+        button.style.visibility="visible";
+        
+        
+    }
+    
+    function showWindow(x,y,w,h)
+    {
+        var win=document.getElementById("dialog");
+        win.style.visibility="visible";
+        win.style.left=x+"px";
+        win.style.top=y+"px";        
+        win.style.width=64+w+"px";           
+        win.style.height=64+h+"px";  
+
+        //hide the buttons
+        var button=document.getElementById("ok");
+        button.style.visibility="hidden";        
+        
+        var win=document.getElementById("d7");       
+        win.style.left="0px";
+        win.style.top="0px";  
+        
+        var win=document.getElementById("d9");       
+        win.style.left=32+w+"px";
+        win.style.top="0px";          
+        
+        var win=document.getElementById("d1");       
+        win.style.left="0px";
+        win.style.top=32+h+"px";  
+        
+        var win=document.getElementById("d3");       
+        win.style.left=32+w+"px";
+        win.style.top=32+h+"px";
+        
+        var win=document.getElementById("d8");       
+        win.style.left="32px";
+        win.style.top="0px";        
+        win.style.width=w+"px";           
+        win.style.height="32px";       
+        
+        var win=document.getElementById("d2");       
+        win.style.left="32px";
+        win.style.top=32+h+"px";        
+        win.style.width=w+"px";           
+        win.style.height="32px";  
+        
+        var win=document.getElementById("d4");       
+        win.style.left="0px";
+        win.style.top="32px";        
+        win.style.width="32px";           
+        win.style.height=h+"px";        
+        
+        var win=document.getElementById("d6");       
+        win.style.left=32+w+"px";
+        win.style.top="32px";        
+        win.style.width="32px";           
+        win.style.height=h+"px";          
+        
+        var win=document.getElementById("d5");       
+        win.style.left="32px";
+        win.style.top="32px";        
+        win.style.width=w+"px";           
+        win.style.height=h+"px"; 
+        
         
     }
     
