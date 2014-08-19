@@ -33,6 +33,10 @@ var Images=new Array();
 var obsImage =new Array(); //list of obstacle images, all in <div> mode.
 var grids=new Array();  //a collection of grids,
     
+var whosTurn;  //0-player's turn 10-enemies' turn
+var cancelledMovement=false;  //when true, means a window popped up and needs front mani.
+
+    
     //characters:
     
     var player;
@@ -46,6 +50,7 @@ var grids=new Array();  //a collection of grids,
     
     var scores=0;
     var taskitem=new Array();
+    
     
     
 
@@ -120,7 +125,7 @@ function init()
         initStage(currentStage);
         
         
-        showWalkBlocks(player);
+        
         //clearWalkBlock();
         
 }
@@ -138,6 +143,9 @@ function init()
 
 function initStage(stage)
 {
+    
+
+    
     switch (stage)
     {
         case 1:
@@ -183,26 +191,28 @@ function initStage(stage)
         
                 //createEnemy(8,3,0); //0 means the skin id.
                 //createEnemy(2,3,0);
-                //createEnemy(7,1,0);
+                createEnemy(7,1,0);
                 addItem(1,2,1,20,1,"gold1","msgDialog(150,150,'Hello World!');");
-                //addItem(3,0,1,20,1,"gold1");
+                addItem(7,1,1,20,1,"gold1","deleteBlock(3,3);");
                 addItem(8,4,1,20,1,"gold1",'addItem(0,4,1,20,1,"gold1");');                
                 
-                
+
             break;
             
-            
+          
             
     }           
-//============================general init:=================================
+
+ //============================general init:=================================
             //player:
         
         
-       player=new playerClass(playerStartX,playerStartY,"chr/player/2vdo45v_","player");
+        player=new playerClass(playerStartX,playerStartY,"chr/player/2vdo45v_","player");
         player.setVisible(true);
-        player.setFrame(1,1);
-        
-
+        player.setFrame(1,1);    
+    
+        cancelledMovement=false;         
+        showWalkBlocks(player);
 
 
 }
@@ -216,9 +226,9 @@ function initStage(stage)
 
 //===================================================general functions=========================
 //===================================================general functions=========================
-    function addSpot(x,y,number,script)
+    function addHotPoint(x,y,number,script,outScript)
     {
-        spotlist.push(new hotSpot(x,y,number,script));
+        spotlist.push(new hotPoint(x,y,number,script,outScript));
     }
     
     
@@ -293,10 +303,12 @@ function initStage(stage)
             var id=xy2int(x,y);
             
             grids[id].occupied=value; //this is a brick/obstacle.
+            
             var block=document.createElement("div");
             block.style.position="absolute";
             block.style.width="36px";
             block.style.height=height*36+"px"; 
+            block.id="bk"+x.toString()+y.toString();  //give it a name/id for deleting.
             
             block.style.left=grids[id].x * 36 +"px";
             block.style.top=(grids[id].y-(height-1)) * 36 +"px";
@@ -306,8 +318,26 @@ function initStage(stage)
             block.style.backgroundImage="url('obs/"+skin+".png')";
             document.getElementById("maincontainer").appendChild(block);
     }
+    
+    function deleteBlock(x,y)
+    {
+        var block = document.getElementById("bk"+x+y);
+        if(block==null)return;
+        
+        //delete
+        document.getElementById("maincontainer").removeChild(block);
+        grids[xy2int(x,y)].occupied=0; //set to nothing.
+        
+    }
+    
+    
+    
+    
     function showWalkBlocks(character)
     {
+        
+        if(cancelledMovement===true)return;
+        
         //get the player's position
         var playerpos= character.getPosition();
         //alert(playerpos.x+" "+playerpos.y);
@@ -318,11 +348,11 @@ function initStage(stage)
         createWalkBlocks(playerpos.x-1,playerpos.y);        
         createWalkBlocks(playerpos.x+1,playerpos.y);        
         
-        
+        whosTurn=0;  //our turn
         
     }
 
-    function createWalkBlocks(x,y)
+    function createWalkBlocks(x,y)   //means the 4 dirs block
     {
         if(x<0 || x>=bCountX || y<0 || y>=bCountY)
         {
@@ -459,7 +489,7 @@ function initStage(stage)
     }
     
     
-    function checkPlayerGetItem(x,y)
+    function checkPlayer(x,y)
     {
         //arg: the position of the player
         
@@ -474,6 +504,12 @@ function initStage(stage)
                 
             }
         }
+        
+        for(i=0;i<spotlist.length;i++)
+        {
+            spotlist[i].drive();
+        }
+        
         
     }
     
@@ -496,7 +532,7 @@ function initStage(stage)
         
     }
     
-    function msgDialog(x,y,text)
+    function msgDialog(x,y,text,result)
     {
         //return: null-nothing pressed or error
         //1-ok
@@ -516,8 +552,15 @@ function initStage(stage)
         button.style.left=width/2-43+"px";
         button.style.top=height-16+"px";
         button.style.visibility="visible";
+        button.addEventListener("click",function(){closeMsg(); restore(result);},false);
+        cancelledMovement=true;
         
         
+    }
+    function closeMsg()
+    {
+        document.getElementById("dialog").style.visibility='hidden';
+        document.getElementById("ok").style.visibility='hidden';        
     }
     
     function showWindow(x,y,w,h)
@@ -902,7 +945,10 @@ function initStage(stage)
 
     function enemyTurn()
     {
+        if(cancelledMovement===true)return;  //do nothing if we want to cancel the enemies' movement
         
+        
+        whosTurn=10;
         if(enemyList.length===0)
         {
             showWalkBlocks(player);
@@ -1054,13 +1100,16 @@ function gridClass(number)
 }
 
 
-function hotSpot(x,y,numberOfUse,script)
+function hotPoint(x,y,numberOfUse,script,outScript)
 {
     this.x=x;
     this.y=y;
     this.numberOfUse=numberOfUse;
     this.script=script;
+    this.outScript=outScript;
     this.enabled=true;
+    this.inside=false;  //if the player entered, true, when the player went out, check this,
+                         //if true, execute outScript.
     var that=this;
     
     this.drive=function ()
@@ -1083,6 +1132,15 @@ function hotSpot(x,y,numberOfUse,script)
             }
                 
         }
+        else  //out of the spot.
+        {
+            if(that.inside)
+            {
+                that.inside=false;
+                    eval(that.outScript);
+            }
+        }
+            
     };
     
 }
@@ -1321,14 +1379,11 @@ function playerClass(x,y,fileString,id)
                 }
                 
 
-            //set dir down:
-            //this.dir=1;
-            //this.setFrame(1,1);
-            //alert(that.element.id);
+
                 if(that.element.id==="player")
                 {
                     //check if the player get any item in the current grid.
-                    checkPlayerGetItem(that.x,that.y);
+                    checkPlayer(that.x,that.y);
                     
                     
                     enemyTurn();
@@ -1375,9 +1430,26 @@ function playerClass(x,y,fileString,id)
 }
 
 
+//========================================Restored=========================================
+//========================================Restored=========================================
 
-
-
+function restore(eventID)
+{
+    //eventID: an integer that the caller will pass, it tells which event should this
+    //function execute.
+    cancelledMovement=false;
+    if(eventID==null)
+    {
+            if(whosTurn===0)
+            {
+                enemyTurn();
+            }
+            else
+            {
+                showWalkBlocks(player);
+            }
+    }
+}
 
 
 
