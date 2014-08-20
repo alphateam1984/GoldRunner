@@ -10,8 +10,8 @@
  */
 
 
-main(); //load the main funtion.
-
+//main(); //load the main funtion.
+window.onload=main;
 
 
 var global;
@@ -50,7 +50,7 @@ var cancelledMovement=false;  //when true, means a window popped up and needs fr
     
     var scores=0;
     var taskitem=new Array();
-    
+    var dialogResult;
     
     
 
@@ -117,6 +117,10 @@ function init()
         loadImage("chr/em/emb1_41.png");
         loadImage("chr/em/emb1_42.png");
         loadImage("chr/em/emb1_43.png");         
+       
+       //msgbox event listener.
+       document.getElementById("ok").addEventListener("click",function(){closeMsg(); restore(dialogResult);},false);
+       
        
        
        
@@ -192,9 +196,12 @@ function initStage(stage)
                 //createEnemy(8,3,0); //0 means the skin id.
                 //createEnemy(2,3,0);
                 createEnemy(7,1,0);
-                addItem(1,2,1,20,1,"gold1","msgDialog(150,150,'Hello World!');");
+                addItem(1,2,1,20,1,"gold1","msgDialog(150,150,whosTurn.toString());");
                 addItem(7,1,1,20,1,"gold1","deleteBlock(3,3);");
                 addItem(8,4,1,20,1,"gold1",'addItem(0,4,1,20,1,"gold1");');                
+                
+                addHotPoint(2,1,-1,"msgDialog(150,150,'Enter');","msgDialog(150,150,'Out');");
+                
                 
 
             break;
@@ -552,7 +559,8 @@ function initStage(stage)
         button.style.left=width/2-43+"px";
         button.style.top=height-16+"px";
         button.style.visibility="visible";
-        button.addEventListener("click",function(){closeMsg(); restore(result);},false);
+        //dialogResult=result;
+        //button.removeEventListener();
         cancelledMovement=true;
         
         
@@ -1129,6 +1137,7 @@ function hotPoint(x,y,numberOfUse,script,outScript)
                 //-1
                 if(that.numberOfUse>0)that.numberOfUse--;
                 if(that.script.length>0)    eval(that.script);
+                that.inside=true;
             }
                 
         }
