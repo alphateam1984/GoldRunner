@@ -539,7 +539,7 @@ function initStage(stage)
         
     }
     
-    function msgDialog(x,y,text,result)
+    function msgDialog(x,y,text,resultScript,icon,iconSize,iconPosition)
     {
         //return: null-nothing pressed or error
         //1-ok
@@ -559,8 +559,14 @@ function initStage(stage)
         button.style.left=width/2-43+"px";
         button.style.top=height-16+"px";
         button.style.visibility="visible";
-        //dialogResult=result;
-        //button.removeEventListener();
+        
+        var ic=document.getElementById("dialogicon");
+        ic.style.width=iconSize+"px";
+        ic.style.height=iconSize+"px";   
+        
+        
+        
+        
         cancelledMovement=true;
         
         
