@@ -20,38 +20,44 @@ function main(){
 //=========================================declarations:=======================================
 
 
-
+//system:
 var imageIndex=0;
 global=this;
 var currentStage=1;
 
+
+
+var Images=new Array();
+var imageLoad=0;
+var imageLoaded=0;
+var imageLoaderCount=false;
+var imageLoaderFlag=0;
+
+//game play:
 var bCountX=0;  //count of the blocks on x axis.
 var bCountY=0;
 
 var walkBlocks=new Array();
-var Images=new Array();
-var obsImage =new Array(); //list of obstacle images, all in <div> mode.
 var grids=new Array();  //a collection of grids,
-    
 var whosTurn;  //0-player's turn 10-enemies' turn
 var cancelledMovement=false;  //when true, means a window popped up and needs front mani.
 
     
-    //characters:
-    
-    var player;
-    var enemyList=new Array();   //collect all the enemy instances.   
-    var enemyAllFinished=new Array();  //length should be the same as it of enemylist.
-    
-    
-    //items & misc:
-    var itemlist=new Array();
-    var spotlist=new Array();
-    
-    var scores=0;
-    var taskitem=new Array();
-    var dialogResult;
-    
+//characters:
+
+var player;
+var enemyList=new Array();   //collect all the enemy instances.   
+var enemyAllFinished=new Array();  //length should be the same as it of enemylist.
+
+
+//items & misc:
+var itemlist=new Array();
+var spotlist=new Array();
+
+var scores=0;
+var taskitem=new Array();
+var dialogResult;
+
     
 
 //init
@@ -71,13 +77,8 @@ init();
 function init()
 {
     //step1: preload the images.
-       for(var i=0;i<12;i++)
-       {
-            //load player's images.
-            Images[i]=new Image();
-            Images[i].src="player/img"+i+".png";
-       }
-       
+
+        imageStart(1);
             //preload the system images.
             loadImage("system/walk.png");
             loadImage("system/nowalk.png");            
@@ -102,7 +103,7 @@ function init()
         loadImage("chr/player/2vdo45v_41.png");
         loadImage("chr/player/2vdo45v_42.png");
         loadImage("chr/player/2vdo45v_43.png");       
-       
+        
        //enemy's images:
        //skin1:
         loadImage("chr/em/emb1_11.png");
@@ -116,7 +117,12 @@ function init()
         loadImage("chr/em/emb1_33.png");
         loadImage("chr/em/emb1_41.png");
         loadImage("chr/em/emb1_42.png");
-        loadImage("chr/em/emb1_43.png");         
+        loadImage("chr/em/emb1_43.png"); 
+        
+       
+        imageEnd();
+       
+       
        
        //msgbox event listener.
        document.getElementById("ok").addEventListener("click",function(){closeMsg(); restore(dialogResult);},false);
@@ -226,77 +232,33 @@ function initStage(stage)
 
 
 
-
-
-
-
-
-//===================================================general functions=========================
-//===================================================general functions=========================
+//========================================Commands====================================
+//========================================Commands====================================
+function movePlayer(player,x,y)
+{
+    //arg: player, the player instance which we are going to move, x/y,the new place.
+    var e=player.element;
+    
+    e.style.left=x*36+"px";
+    e.style.height=y*36+"px";
+    e.x=x;
+    e.y=y;
+    
+    
+}
     function addHotPoint(x,y,number,script,outScript)
     {
         spotlist.push(new hotPoint(x,y,number,script,outScript));
     }
-    
-    
+
     function addItem(x,y,code,score,taskCount,img,script)
     {
         itemlist.push(new itemClass(x,y,code,score,taskCount,img,script));
     }
-    
-    
-    
-    function addPath(x,y,id)
-    {
-        if(x<0 || x>=bCountX || y<0 || y>=bCountY)
-        {
-            //the block is out of the playing range.
-            //will not generate the walk block.
-            return;
-        }
 
-        
-        
-        var wb=document.createElement("div");
-        wb.style.position="absolute";
-        wb.style.width='36px';
-        wb.style.height='36px';        
-        wb.style.left=x*36+"px";
-        wb.style.top=y*36+"px";  
-        
-        wb.style.zIndex="1";
-        
 
-        wb.style.backgroundImage="url('system/path.png')";
 
-        wb.setAttribute("id",id);
-        document.getElementById("pathlayer").appendChild(wb);
-               
-    }
-    
-    
-    function loadImage(path)
-    {
-        Images[imageIndex]=new Image();
-        Images[imageIndex].src=path;
-        imageIndex++;
-        
-    }
-    function clearImage()
-    {
-        Images=new Array();
-        imageIndex=0;
-    }
-    function initGrids(x,y)
-    {
-        grids=new Array();
-        for(var i=0;i<(x*y);i++)
-        {
-            grids[i]=new gridClass(i);
-            
-        }
-    }
-    
+
     function addBlankObstacle(x,y)
     {
         addBlock(x,y,"",3);
@@ -335,6 +297,144 @@ function initStage(stage)
         document.getElementById("maincontainer").removeChild(block);
         grids[xy2int(x,y)].occupied=0; //set to nothing.
         
+    }
+    
+    function createEnemy(x,y,skin)
+    {
+            var enemy=new playerClass(x,y,"chr/em/emb1_","enemy");
+            enemy.setVisible(true);
+            enemy.setFrame(2,1);
+            enemyList.push(enemy);
+    }
+
+
+    function msgDialog(x,y,text,resultScript,icon,iconSize,iconPosition)
+    {
+        //return: null-nothing pressed or error
+        //1-ok
+        //2-cancel
+        //3-yes
+        //4-no
+        
+        var width=160;
+        var height=100;
+        if(text.length>16)
+        {
+            width=text.length*10;
+        }
+        document.getElementById("d5").innerHTML="<p align='middle'>"+text+"</p>";
+        showWindow(x,y,width,height);
+        var button=document.getElementById("ok");
+        button.style.left=width/2-43+"px";
+        button.style.top=height-16+"px";
+        button.style.visibility="visible";
+        
+        var ic=document.getElementById("dialogicon");
+        ic.style.width=iconSize+"px";
+        ic.style.height=iconSize+"px";   
+        
+        
+        
+        
+        cancelledMovement=true;
+        
+        
+    }
+
+
+//===================================================general functions=========================
+//===================================================general functions=========================
+
+    
+    
+    //=================system=========================
+        function loadImage(path)
+    {
+        Images[imageIndex]=new Image();
+        Images[imageIndex].src=path;
+        if(imageLoaderCount) imageLoad++;
+        Images[imageIndex].onload=function(){
+            imageLoaded++;
+            //call the event:
+            imageLoadStep(Math.floor( imageLoaded/imageLoad*100),imageLoaderFlag);
+            if(imageLoaded===imageLoad)
+            {
+                //call finish:
+                imageLoadFinish(imageLoaderFlag);
+            }
+        };
+        
+        
+        
+        imageIndex++;
+        
+    }
+    function clearImage()
+    {
+        Images=new Array();
+        imageIndex=0;
+    }
+    function imageStart(flag)
+    {
+        imageLoad=0;
+        imageLoaded=0;
+        imageLoaderCount=true;
+        imageLoaderFlag=flag;
+    }
+    
+    function imageEnd()
+    {
+        imageLoaderCount=false;
+    }
+    
+    
+    
+    
+    
+    
+    
+    //=================general=========================
+    
+    
+    
+    function addPath(x,y,id)
+    {
+        if(x<0 || x>=bCountX || y<0 || y>=bCountY)
+        {
+            //the block is out of the playing range.
+            //will not generate the walk block.
+            return;
+        }
+
+        
+        
+        var wb=document.createElement("div");
+        wb.style.position="absolute";
+        wb.style.width='36px';
+        wb.style.height='36px';        
+        wb.style.left=x*36+"px";
+        wb.style.top=y*36+"px";  
+        
+        wb.style.zIndex="1";
+        
+
+        wb.style.backgroundImage="url('system/path.png')";
+
+        wb.setAttribute("id",id);
+        document.getElementById("pathlayer").appendChild(wb);
+               
+    }
+    
+    
+
+    function initGrids(x,y)
+    {
+        grids=new Array();
+        for(var i=0;i<(x*y);i++)
+        {
+            grids[i]=new gridClass(i);
+            
+        }
     }
     
     
@@ -455,13 +555,7 @@ function initStage(stage)
 
 
 
-    function createEnemy(x,y,skin)
-    {
-            var enemy=new playerClass(x,y,"chr/em/emb1_","enemy");
-            enemy.setVisible(true);
-            enemy.setFrame(2,1);
-            enemyList.push(enemy);
-    }
+
     
     
     function refreshPath()
@@ -539,38 +633,7 @@ function initStage(stage)
         
     }
     
-    function msgDialog(x,y,text,resultScript,icon,iconSize,iconPosition)
-    {
-        //return: null-nothing pressed or error
-        //1-ok
-        //2-cancel
-        //3-yes
-        //4-no
-        
-        var width=160;
-        var height=100;
-        if(text.length>16)
-        {
-            width=text.length*10;
-        }
-        document.getElementById("d5").innerHTML="<p align='middle'>"+text+"</p>";
-        showWindow(x,y,width,height);
-        var button=document.getElementById("ok");
-        button.style.left=width/2-43+"px";
-        button.style.top=height-16+"px";
-        button.style.visibility="visible";
-        
-        var ic=document.getElementById("dialogicon");
-        ic.style.width=iconSize+"px";
-        ic.style.height=iconSize+"px";   
-        
-        
-        
-        
-        cancelledMovement=true;
-        
-        
-    }
+
     function closeMsg()
     {
         document.getElementById("dialog").style.visibility='hidden';
@@ -1467,6 +1530,26 @@ function restore(eventID)
 }
 
 
+function imageLoadStep(percentage,flag)
+{
+    
+    if(flag===1)
+    {
+        document.getElementById("toplayer").innerHTML=percentage;
+        //console.log(percentage+"% , "+imageLoaded+"/"+ imageLoad);
+    }
+    
+    
+    
+}
+function imageLoadFinish(flag)
+{
+    if(flag===1)
+    {
+        //initializing:
+        document.getElementById("toplayer").style.visibility="hidden";
+    }
+}
 
 
 
