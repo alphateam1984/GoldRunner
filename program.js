@@ -201,7 +201,7 @@ function initStage(stage)
         
                 //createEnemy(8,3,0); //0 means the skin id.
                 //createEnemy(2,3,0);
-                createEnemy(7,1,0);
+                createEnemy(7,1,"emb1_");
                 addItem(1,2,1,20,1,"gold1","msgDialog(150,150,whosTurn.toString());");
                 addItem(7,1,1,20,1,"gold1","deleteBlock(3,3);");
                 addItem(8,4,1,20,1,"gold1",'addItem(0,4,1,20,1,"gold1");');                
@@ -301,7 +301,7 @@ function movePlayer(player,x,y)
     
     function createEnemy(x,y,skin)
     {
-            var enemy=new playerClass(x,y,"chr/em/emb1_","enemy");
+            var enemy=new playerClass(x,y,"chr/em/"+skin,"enemy");
             enemy.setVisible(true);
             enemy.setFrame(2,1);
             enemyList.push(enemy);
@@ -1225,7 +1225,7 @@ function hotPoint(x,y,numberOfUse,script,outScript)
 
 
 
-function itemClass(x,y,code,score,taskCount,img,script)
+function itemClass(x,y,code,score,taskCount,img,script,keep)
 {
     
     this.code=code;  //code: 0: , 1:gold1, 2:gold2, 3:
@@ -1235,6 +1235,8 @@ function itemClass(x,y,code,score,taskCount,img,script)
     this.x=x;  //position.
     this.y=y;
     this.script="";  //script file, can be executed by the game when the player got this item.
+    this.keep=keep;  //means when we get the item, it will not disappear, will not add
+                     //score, will not affect taskcount, will not execute the script.
     if(script!=null)
     {
         this.script= script;

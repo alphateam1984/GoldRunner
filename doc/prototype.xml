@@ -28,7 +28,7 @@ and open the template in the editor.
         </blank>
     </blanks>        
     <items>
-        <item x="0" y="0" code="2" score="3" taskcount="1" img="string">
+        <item x="0" y="0" code="2" score="3" taskcount="1" img="string" keep="false">
             <![CDATA[
                 write script here...
             ]]>
