@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+
+
+<map divideX="10" divideY="5" bg="floor2">
+    <players>
+        <player x="0" y="2" skin="2vdo45v_" id="player"> <!--id is 'player' if this is put into players' tag-->
+            
+        </player>
+    </players>
+    <enemies>
+        <enemy x="10" y="10" skin="emb1_" id="enemy">
+            
+        </enemy>
+    </enemies>
+    <blocks>
+        <block x="7" y="3" skin="tree1" value="3" height="2">
+            
+        </block>
+    </blocks>
+    <blanks>
+        <blank x="0" y="0">
+            
+        </blank>
+        <blank x="1" y="0">
+            
+        </blank>
+        <blank x="2" y="0">
+            
+        </blank>
+        <blank x="3" y="0">
+            
+        </blank>  
+        <blank x="4" y="0">
+            
+        </blank>        
+        <blank x="0" y="1">
+            
+        </blank>                      
+        <blank x="1" y="1">
+            
+        </blank>                                    
+        <blank x="8" y="0">
+            
+        </blank>                                                  
+        <blank x="6" y="1">
+            
+        </blank>
+        <blank x="5" y="2">
+            
+        </blank>              
+        <blank x="6" y="2">
+            
+        </blank>
+        <blank x="0" y="3">
+            
+        </blank>        
+        <blank x="1" y="3">
+            
+        </blank>                                                  
+        <blank x="2" y="3">
+            
+        </blank>
+        <blank x="3" y="3">
+            
+        </blank>
+        <blank x="4" y="3">
+            
+        </blank> 
+        <blank x="5" y="3">
+            
+        </blank>
+        <blank x="9" y="4">
+            
+        </blank>                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         
+    </blanks>        
+    <items>
+        <item x="1" y="2" code="1" score="20" taskcount="1" img="gold1" keep="false">
+            <![CDATA[
+                msgDialog(150,150,whosTurn.toString());
+            ]]>
+        </item>
+        <item x="7" y="1" code="1" score="20" taskcount="1" img="gold1" keep="false">
+            <![CDATA[
+                deleteBlock(3,3);
+            ]]>
+        </item>        
+        <item x="8" y="4" code="1" score="20" taskcount="1" img="gold1" keep="false">
+            <![CDATA[
+                addItem(0,4,1,20,1,"gold1");
+            ]]>
+        </item>        
+        
+    </items>
+    <hotpoints>
+        <hotpoint x="2" y="1" number="-1">
+            <!--in script-->
+            <![CDATA[
+                msgDialog(150,150,'Enter');
+            ]]>
+            <!--out script-->            
+            <![CDATA[
+                msgDialog(150,150,'Out');
+            ]]>                        
+        </hotpoint>
+    </hotpoints>
+</map>
