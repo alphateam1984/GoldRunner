@@ -1,8 +1,10 @@
 /* 
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+==============================================================================================
+                                   Gold Runner Game Logic
+
+ 
+ ============================================================================================== 
+ *   */
 
 /*
  * 
@@ -48,6 +50,12 @@ var cancelledMovement=false;  //when true, means a window popped up and needs fr
 var player;
 var enemyList=new Array();   //collect all the enemy instances.   
 var enemyAllFinished=new Array();  //length should be the same as it of enemylist.
+var playerList=new Array();  //this is a dynamic-ranged array that stores all the available player's roles
+//in the current stage. when it's the player's turn, the system will traverse each element no matter
+//it's enabled or not, when enabled, will shows its walkblock and wait for the next available player.
+var playerListIterator=0; //this is a pointer(iterator) that tells the system the current index in player's list.
+//will ++ when the current player finishes walking, when this==playerlist.lengh, means players' moves end, turn to enemy.
+
 
 
 //items & misc:
@@ -155,6 +163,12 @@ function initStage(stage)
 {
     
 
+    if(true)//general reset before a stage loading.
+    {
+        playerListIterator=0;
+    }
+    
+    
     
     switch (stage)
     {
@@ -203,7 +217,7 @@ function initStage(stage)
                 //createEnemy(2,3,0);
                 createEnemy(7,1,"emb1_");
                 addItem(1,2,1,20,1,"gold1","msgDialog(150,150,whosTurn.toString());");
-                addItem(7,1,1,20,1,"gold1","deleteBlock(3,3);");
+                addItem(7,1,1,20,1,"gold1","deleteBlock(3,3);setPlayerEnabled('john',true);");
                 addItem(8,4,1,20,1,"gold1",'addItem(0,4,1,20,1,"gold1");');                
                 
                 addHotPoint(2,1,-1,"msgDialog(150,150,'Enter');","msgDialog(150,150,'Out');");
@@ -223,9 +237,21 @@ function initStage(stage)
         player=new playerClass(playerStartX,playerStartY,"chr/player/2vdo45v_","player");
         player.setVisible(true);
         player.setFrame(1,1);    
-    
+        playerList.push(player);  //add our player to the list so that the big turn will traverse and find it.
+        
+        var player1;
+        player1=new playerClass(1,4,"chr/player/2vdo45v_","player");
+        //player1.enabled=false;
+        player1.name="john";  //set a name
+        player1.setVisible(true);
+        player1.setFrame(1,1);
+        playerList.push(player1);
+        
+
+
         cancelledMovement=false;         
-        showWalkBlocks(player);
+        //showWalkBlocks(player);
+        playerTurn();
 
 
 }
@@ -246,6 +272,20 @@ function movePlayer(player,x,y)
     
     
 }
+
+
+    function setPlayerEnabled(playerName,value)
+    {
+        for(var i=0;i<playerList.length;i++)
+        {
+            if(playerList[i].name===playerName)
+            {
+                playerList[i].enabled=value;  //set the value
+            }
+        }
+    }
+
+
     function addHotPoint(x,y,number,script,outScript)
     {
         spotlist.push(new hotPoint(x,y,number,script,outScript));
@@ -450,16 +490,16 @@ function movePlayer(player,x,y)
         //alert(playerpos.x+" "+playerpos.y);
         
         //up;
-        createWalkBlocks(playerpos.x,playerpos.y-1);
-        createWalkBlocks(playerpos.x,playerpos.y+1);
-        createWalkBlocks(playerpos.x-1,playerpos.y);        
-        createWalkBlocks(playerpos.x+1,playerpos.y);        
+        createWalkBlocks(playerpos.x,playerpos.y-1,character);
+        createWalkBlocks(playerpos.x,playerpos.y+1,character);
+        createWalkBlocks(playerpos.x-1,playerpos.y,character);        
+        createWalkBlocks(playerpos.x+1,playerpos.y,character);        
         
         whosTurn=0;  //our turn
         
     }
 
-    function createWalkBlocks(x,y)   //means the 4 dirs block
+    function createWalkBlocks(x,y,character)   //means the 4 dirs block
     {
         if(x<0 || x>=bCountX || y<0 || y>=bCountY)
         {
@@ -489,7 +529,7 @@ function movePlayer(player,x,y)
         {
             wb.style.backgroundImage="url('system/walk.png')";  
             //add event
-            wb.addEventListener("click",function(){walkBlockClicked(x,y);},true);
+            wb.addEventListener("click",function(){walkBlockClicked(x,y,character);},true);
         }
         wb.setAttribute("id","wb");
         document.getElementById("maincontainer").appendChild(wb);
@@ -510,10 +550,10 @@ function movePlayer(player,x,y)
         
     }
 
-    function walkBlockClicked(x,y)
+    function walkBlockClicked(x,y,character)
     {
         //alert(x+" "+y);
-        start2Walk(player,x,y);
+        start2Walk(character,x,y);
     }
 
     function start2Walk(char,x,y)   //when the goal is confirmed, drive the character.
@@ -619,6 +659,31 @@ function movePlayer(player,x,y)
         
     }
     
+    
+    
+    
+    
+    //==============================gameplay & gamerule===========================
+    
+    function playerTurn()
+    {
+        if(cancelledMovement===true)return;
+        if(whosTurn!==0) whosTurn=0;  //set to our turn
+        
+        if(playerList[playerListIterator].enabled===true)
+        {
+               showWalkBlocks(playerList[playerListIterator]);  //show walkblocks for the current player(not an enemy)     
+        }
+        
+        
+        playerListIterator++;
+        
+
+
+        
+    }
+    
+    
     function checkItemsCollected()
     {
         
@@ -711,303 +776,317 @@ function movePlayer(player,x,y)
     {
         if(enemyAllFinished.length===enemyList.length)
         {
-            //finished:
-            showWalkBlocks(player);
+            //finished:return to player's turn.
+            //showWalkBlocks(player);
+            playerListIterator=0;
+            playerTurn();
         }
     }
     
     function checkVision(Enemy)
     {
-        //check if the player is inside the enemy's scope, if possitive, return the waypoint array.
+        //check if the player is inside the enemy's scope, if positive, return the waypoint array.
         //arg: enemy[i] in enemylist.
         
-        var inhalf=false;  //when the player is in the area that the enemy is facing, returns true.
         
-        if(Enemy.dir===1 && player.y>=Enemy.y) inhalf=true;
-        if(Enemy.dir===4 && player.y<=Enemy.y) inhalf=true;        
-        if(Enemy.dir===2 && player.x<=Enemy.x) inhalf=true;         
-        if(Enemy.dir===3 && player.x>=Enemy.x) inhalf=true;  
-        
-        if(!inhalf) return;        
-        //check the possibility that the enemy could scope the player.
-        var dx,dy;
-        dx=player.x-Enemy.x;
-        dy=player.y-Enemy.y;        
-        
-        var blockShape;
-        var ret=new Array();
-        var x=Enemy.x;
-        var y=Enemy.y;        
-        var accuMax;
-        var accu;     
-        var end=false;
-        
-        if(Math.abs(dx)>=Math.abs(dy))  //==============================wide ratio=========================
+        ///TODO:add a structure of iteration to help an enemy to find all active players.
+        //for()......
+        for(var i=0;i<playerList.length;i++)
         {
-            if(dy===0)
+            if(playerList[i].visible===false)
             {
-                accuMax=dx;
+                //if this player is set to be unvisible.
+                continue;
             }
-            else if(Math.abs(dy)===1)
-            {
-                accuMax=Math.floor(Math.abs(dx/2));
-            }
-            else
-            {
-                accuMax=Math.floor(Math.abs(dx/dy));
-            }
+            var inhalf=false;  //when the player is in the area that the enemy is facing, returns true.
 
-            accu=0;
-            blockShape=0;
-            
-            while(end===false)
+            if(Enemy.dir===1 && playerList[i].y>=Enemy.y) inhalf=true;
+            if(Enemy.dir===4 && playerList[i].y<=Enemy.y) inhalf=true;        
+            if(Enemy.dir===2 && playerList[i].x<=Enemy.x) inhalf=true;         
+            if(Enemy.dir===3 && playerList[i].x>=Enemy.x) inhalf=true;  
+
+            if(!inhalf) continue;        
+            //check the possibility that the enemy could scope the player.
+            var dx,dy;
+            dx=playerList[i].x-Enemy.x;
+            dy=playerList[i].y-Enemy.y;        
+
+            var blockShape;
+            var ret=new Array();
+            var x=Enemy.x;
+            var y=Enemy.y;        
+            var accuMax;
+            var accu;     
+            var end=false;
+
+            if(Math.abs(dx)>=Math.abs(dy))  //==============================wide ratio=========================
             {
-                if(dx<0) //------------------------left------------------
+                if(dy===0)
                 {
-                    x--; //move 1 left.
-                    if(x<0 || x>=bCountX || y<0 || y>=bCountY)
+                    accuMax=dx;
+                }
+                else if(Math.abs(dy)===1)
+                {
+                    accuMax=Math.floor(Math.abs(dx/2));
+                }
+                else
+                {
+                    accuMax=Math.floor(Math.abs(dx/dy));
+                }
+
+                accu=0;
+                blockShape=0;
+
+                while(end===false)
+                {
+                    if(dx<0) //------------------------left------------------
                     {
-                        return null;
-                    }
-                    else
-                    {
-                        if(grids[xy2int(x,y)].occupied===3)
+                        x--; //move 1 left.
+                        if(x<0 || x>=bCountX || y<0 || y>=bCountY)
                         {
-                            //meet the brick.
-                            return null;
+                            break;
                         }
                         else
                         {
-                            ret.push(2); 
-                            accu++;
-                            if(accu===accuMax)
+                            if(grids[xy2int(x,y)].occupied===3)
                             {
-                                accu=0; //reset
-                                //check if it meets the end(player).   
-                                if(xy2int(x,y)===xy2int(player.x,player.y))
-                                    {
-                                        //meet the player.
-                                        return ret;
-                                    }                                
-                                if(dy>0){ret.push(1);y++;}
-                                if(dy<0){ret.push(4);y--;}                     
-                                if(x<0 || x>=bCountX || y<0 || y>=bCountY) //when out of the map
+                                //meet the brick.
+                                break;
+                            }
+                            else
+                            {
+                                ret.push(2); 
+                                accu++;
+                                if(accu===accuMax)
                                 {
-                                    end=true;
-                                }
-                                else
-                                {
-                                    if(grids[xy2int(x,y)].occupied===3)
+                                    accu=0; //reset
+                                    //check if it meets the end(player).   
+                                    if(xy2int(x,y)===xy2int(playerList[i].x,playerList[i].y))
+                                        {
+                                            //meet the player.
+                                            return ret;
+                                        }                                
+                                    if(dy>0){ret.push(1);y++;}
+                                    if(dy<0){ret.push(4);y--;}                     
+                                    if(x<0 || x>=bCountX || y<0 || y>=bCountY) //when out of the map
                                     {
-                                        //meet the brick.
-                                        return null;
-                                    }                                    
+                                        end=true;
+                                    }
+                                    else
+                                    {
+                                        if(grids[xy2int(x,y)].occupied===3)
+                                        {
+                                            //meet the brick.
+                                            break;
+                                        }                                    
+                                    }
+
                                 }
-                                
+                            }
+                        }
+
+                    }
+                    else  //-----------------------right--------------------
+                    {
+                        x++; //move 1 right.
+
+                        if(x<0 || x>=bCountX || y<0 || y>=bCountY)
+                        {
+                            break;
+                        }
+                        else
+                        {
+                            if(grids[xy2int(x,y)].occupied===3)
+                            {
+                                //meet the brick.
+                                break;
+                            }
+                            else
+                            {
+                                ret.push(3); 
+                                accu++;
+                                if(accu===accuMax)
+                                {
+                                    accu=0; //reset
+                                    //check if it meets the end(player).   
+                                    if(xy2int(x,y)===xy2int(playerList[i].x,playerList[i].y))
+                                        {
+                                            //meet the player.
+                                            return ret;
+                                        }                                
+
+
+                                    if(dy>0){ret.push(1);y++;}
+                                    if(dy<0){ret.push(4);y--;}                          
+                                    if(x<0 || x>=bCountX || y<0 || y>=bCountY) //when out of the map
+                                    {
+                                        end=true;
+                                    }
+                                    else
+                                    {
+                                        if(grids[xy2int(x,y)].occupied===3)
+                                        {
+                                            //meet the brick.
+                                            break;
+                                        }                                    
+                                    }
+
+                                }
                             }
                         }
                     }
 
-                }
-                else  //-----------------------right--------------------
-                {
-                    x++; //move 1 right.
-
-                    if(x<0 || x>=bCountX || y<0 || y>=bCountY)
-                    {
-                        return null;
-                    }
-                    else
-                    {
-                        if(grids[xy2int(x,y)].occupied===3)
+                    //check if it meets the end(player).   
+                    if(xy2int(x,y)===xy2int(playerList[i].x,playerList[i].y))
                         {
-                            //meet the brick.
-                            return null;
+                            //meet the player.
+                            return ret;
+                        }
+
+                        if(x<0 || x>=bCountX || y<0 || y>=bCountY) //when out of the map
+                        {
+                            end=true;
+                        }
+
+                }
+
+            }
+            else //==============================narrow ratio=========================
+            {
+                blockShape=1;
+
+                if(dx===0)
+                {
+                    accuMax=dy;
+                }
+                else if(Math.abs(dx)===1)
+                {
+                    accuMax=Math.floor(Math.abs(dy/2));
+                }
+                else
+                {
+                    accuMax=Math.floor(Math.abs(dy/dx));
+                }
+
+                accu=0;
+                blockShape=0;
+
+                while(end===false)
+                {
+                    if(dy<0) //------------------------up------------------
+                    {
+                        y--; //move 1 up.
+                        if(x<0 || x>=bCountX || y<0 || y>=bCountY)
+                        {
+                            break;
                         }
                         else
                         {
-                            ret.push(3); 
-                            accu++;
-                            if(accu===accuMax)
+                            if(grids[xy2int(x,y)].occupied===3)
                             {
-                                accu=0; //reset
-                                //check if it meets the end(player).   
-                                if(xy2int(x,y)===xy2int(player.x,player.y))
-                                    {
-                                        //meet the player.
-                                        return ret;
-                                    }                                
-                                
-                                
-                                if(dy>0){ret.push(1);y++;}
-                                if(dy<0){ret.push(4);y--;}                          
-                                if(x<0 || x>=bCountX || y<0 || y>=bCountY) //when out of the map
+                                //meet the brick.
+                                break;
+                            }
+                            else
+                            {
+                                ret.push(4); 
+                                accu++;
+                                if(accu===accuMax)
                                 {
-                                    end=true;
-                                }
-                                else
-                                {
-                                    if(grids[xy2int(x,y)].occupied===3)
+                                    accu=0; //reset
+                                    //check if it meets the end(player).   
+                                    if(xy2int(x,y)===xy2int(playerList[i].x,playerList[i].y))
+                                        {
+                                            //meet the player.
+                                            return ret;
+                                        }                                
+                                    if(dx>0){ret.push(3);x++;}
+                                    if(dx<0){ret.push(2);x--;}                         
+                                    if(x<0 || x>=bCountX || y<0 || y>=bCountY) //when out of the map
                                     {
-                                        //meet the brick.
-                                        return null;
-                                    }                                    
+                                        end=true;
+                                    }
+                                    else
+                                    {
+                                        if(grids[xy2int(x,y)].occupied===3)
+                                        {
+                                            //meet the brick.
+                                            break;
+                                        }                                    
+                                    }
+
                                 }
-                                
                             }
                         }
-                    }
-                }
 
-                //check if it meets the end(player).   
-                if(xy2int(x,y)===xy2int(player.x,player.y))
-                    {
-                        //meet the player.
-                        return ret;
                     }
-                    
-                    if(x<0 || x>=bCountX || y<0 || y>=bCountY) //when out of the map
+                    else  //-----------------------down--------------------
                     {
-                        end=true;
-                    }
-                    
-            }
-            
-        }
-        else //==============================narrow ratio=========================
-        {
-            blockShape=1;
-
-            if(dx===0)
-            {
-                accuMax=dy;
-            }
-            else if(Math.abs(dx)===1)
-            {
-                accuMax=Math.floor(Math.abs(dy/2));
-            }
-            else
-            {
-                accuMax=Math.floor(Math.abs(dy/dx));
-            }
-
-            accu=0;
-            blockShape=0;
-            
-            while(end===false)
-            {
-                if(dy<0) //------------------------up------------------
-                {
-                    y--; //move 1 up.
-                    if(x<0 || x>=bCountX || y<0 || y>=bCountY)
-                    {
-                        return null;
-                    }
-                    else
-                    {
-                        if(grids[xy2int(x,y)].occupied===3)
+                        y++; //move 1 down.
+                        if(x<0 || x>=bCountX || y<0 || y>=bCountY)
                         {
-                            //meet the brick.
-                            return null;
+                            break;
                         }
                         else
                         {
-                            ret.push(4); 
-                            accu++;
-                            if(accu===accuMax)
+                            if(grids[xy2int(x,y)].occupied===3)
                             {
-                                accu=0; //reset
-                                //check if it meets the end(player).   
-                                if(xy2int(x,y)===xy2int(player.x,player.y))
-                                    {
-                                        //meet the player.
-                                        return ret;
-                                    }                                
-                                if(dx>0){ret.push(3);x++;}
-                                if(dx<0){ret.push(2);x--;}                         
-                                if(x<0 || x>=bCountX || y<0 || y>=bCountY) //when out of the map
+                                //meet the brick.
+                                break;
+                            }                        
+                            else
+                            {
+                                ret.push(1); 
+                                accu++;
+                                if(accu===accuMax)
                                 {
-                                    end=true;
-                                }
-                                else
-                                {
-                                    if(grids[xy2int(x,y)].occupied===3)
+                                    accu=0; //reset     
+                                    //check if it meets the end(player).   
+                                    if(xy2int(x,y)===xy2int(playerList[i].x,playerList[i].y))
+                                        {
+                                            //meet the player.
+                                            return ret;
+                                        }                                   
+                                    if(dx>0){ret.push(3);x++;}
+                                    if(dx<0){ret.push(2);x--;}  
+                                    if(x<0 || x>=bCountX || y<0 || y>=bCountY) //when out of the map
                                     {
-                                        //meet the brick.
-                                        return null;
-                                    }                                    
+                                        end=true;
+                                    }
+                                    else
+                                    {
+                                        if(grids[xy2int(x,y)].occupied===3)
+                                        {
+                                            //meet the brick.
+                                            break;
+                                        }                                    
+                                    }
+
+
                                 }
-                                
                             }
                         }
                     }
 
-                }
-                else  //-----------------------down--------------------
-                {
-                    y++; //move 1 down.
-                    if(x<0 || x>=bCountX || y<0 || y>=bCountY)
-                    {
-                        return null;
-                    }
-                    else
-                    {
-                        if(grids[xy2int(x,y)].occupied===3)
+                    //check if it meets the end(player).   
+                    if(xy2int(x,y)===xy2int(playerList[i].x,playerList[i].y))
                         {
-                            //meet the brick.
-                            return null;
-                        }                        
-                        else
-                        {
-                            ret.push(1); 
-                            accu++;
-                            if(accu===accuMax)
-                            {
-                                accu=0; //reset     
-                                //check if it meets the end(player).   
-                                if(xy2int(x,y)===xy2int(player.x,player.y))
-                                    {
-                                        //meet the player.
-                                        return ret;
-                                    }                                   
-                                if(dx>0){ret.push(3);x++;}
-                                if(dx<0){ret.push(2);x--;}  
-                                if(x<0 || x>=bCountX || y<0 || y>=bCountY) //when out of the map
-                                {
-                                    end=true;
-                                }
-                                else
-                                {
-                                    if(grids[xy2int(x,y)].occupied===3)
-                                    {
-                                        //meet the brick.
-                                        return null;
-                                    }                                    
-                                }
+                            //meet the player.
+                            return ret;
+                        }   
 
-                                
-                            }
+
+                        if(x<0 || x>=bCountX || y<0 || y>=bCountY) //when out of the map
+                        {
+                            end=true;
                         }
-                    }
-                }
 
-                //check if it meets the end(player).   
-                if(xy2int(x,y)===xy2int(player.x,player.y))
-                    {
-                        //meet the player.
-                        return ret;
-                    }   
-                    
-                    
-                    if(x<0 || x>=bCountX || y<0 || y>=bCountY) //when out of the map
-                    {
-                        end=true;
-                    }
-                    
-                    
-            }            
-            
-            
+
+                }            
+
+
+            }
+        
         }
         
         return null; //cannot find the player.
@@ -1028,7 +1107,7 @@ function movePlayer(player,x,y)
         whosTurn=10;
         if(enemyList.length===0)
         {
-            showWalkBlocks(player);
+            playerTurn();
             return ;
         }
         
@@ -1295,7 +1374,7 @@ function itemClass(x,y,code,score,taskCount,img,script,keep)
 
 
 
-function playerClass(x,y,fileString,id)
+function playerClass(x,y,fileString,id,name)
 {
     if(id==null)return ;
     //x & y mean the start position of the character.
@@ -1312,7 +1391,7 @@ function playerClass(x,y,fileString,id)
         grids[xy2int(x,y)].occupied=2;   //enemy         
     }
 
-    
+    this.name=name;  //player's name, will be set in map editor
     
     this.dir=1;//direction, 1:down,2:left,3:right,4:up.
     this.element=document.createElement("div"); //dom object.
@@ -1329,12 +1408,13 @@ function playerClass(x,y,fileString,id)
     this.timer;  //timer obj, when animation done, use this to stop it(clearInterval()).
     this. accer=1;  //only 1/-1, this will be added when changing the frame. use currentframe + accer.
     this.route=new Array(); //route point collection. only for ai controlled players(enemy).    
-    
+    this.enabled=true;  //when false, this character will not be shown walkblocks in player's turn.
+    this.visible=true;  //tells the system whether this character could be seen by any enemy.
     
     document.getElementById("maincontainer").appendChild(this.element);
     var file=fileString;
     
-
+    
     
     
     var currentFrame=1; //current frame; 1-3. 
@@ -1466,7 +1546,18 @@ function playerClass(x,y,fileString,id)
                     checkPlayer(that.x,that.y);
                     
                     
-                    enemyTurn();
+                
+                            //check if all the players have walked, if yes, turn to enemy,if not make one more turn on players.
+                    if(playerListIterator===playerList.length)
+                    {
+                        //finished all walking.
+                        //playerListIterator=0; //reset
+                        enemyTurn();
+                    }
+                    else
+                    {
+                        playerTurn(); //go on with the next player.
+                    }
                 }
                 else
                 {
@@ -1517,12 +1608,23 @@ function restore(eventID)
 {
     //eventID: an integer that the caller will pass, it tells which event should this
     //function execute.
+    //running this means we want to quit any event/dialog and move on with the game.
+    
     cancelledMovement=false;
     if(eventID==null)
     {
             if(whosTurn===0)
             {
-                enemyTurn();
+                if(playerListIterator===playerList.length)
+                {
+                    //finished all walking.
+                    playerListIterator=0; //reset
+                    enemyTurn();
+                }
+                else
+                {
+                    playerTurn(); //go on with the next player.
+                }
             }
             else
             {
