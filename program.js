@@ -588,7 +588,7 @@ function movePlayer(player,x,y)
         
     }
     
-     function  xy2int (x,y)
+     function xy2int (x,y)
     {
         return y*bCountX+x;
     };
@@ -1264,15 +1264,16 @@ function hotPoint(x,y,numberOfUse,script,outScript)
     this.script=script;
     this.outScript=outScript;
     this.enabled=true;
-    this.inside=false;  //if the player entered, true, when the player went out, check this,
+    this.inside=-1;  //if the player entered, will be the player's index, when the player went out, check this,
                          //if true, execute outScript.
     var that=this;
+    
     
     this.drive=function ()
     {
         if(that.enabled===false)return;  //check enabled.
         
-        if(player.x===that.x && player.y===that.y)
+        if(playerList[playerListIterator-1].x===that.x && playerList[playerListIterator-1].y===that.y)
         {
             //hit the spot:
             if(that.numberOfUse===0)
@@ -1285,15 +1286,15 @@ function hotPoint(x,y,numberOfUse,script,outScript)
                 //-1
                 if(that.numberOfUse>0)that.numberOfUse--;
                 if(that.script.length>0)    eval(that.script);
-                that.inside=true;
+                that.inside=playerListIterator-1;
             }
                 
         }
         else  //out of the spot.
         {
-            if(that.inside)
+            if(that.inside===playerListIterator-1)
             {
-                that.inside=false;
+                that.inside=-1;
                     eval(that.outScript);
             }
         }
