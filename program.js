@@ -14,6 +14,7 @@
 
 //main(); //load the main funtion.
 window.onload=main;
+var ReceivedMapJSON='var s="this is a string";'  ;//'"Map" : {                "bg" : "floor2",    "divideX" : "10",    "divideY" : "5",            "Startup" : "var usage = "test";",        "Players" : { "Player" :[{                "enabled" : "True",    "name" : "NewPlayer",    "role" : "0",    "src" : "2vdo45v",    "x" : "0",    "y" : "2",        },{                "enabled" : "True",    "name" : "NewPlayer",    "role" : "0",    "src" : "2vdo45v",    "x" : "0",    "y" : "4",        }] },        "Blocks" : "",        "Blanks" : "",        "Items" : { "Item" :[{                "code" : "0",    "img" : "tree1",    "keep" : "False",    "score" : "0",    "task" : "0",    "x" : "8",    "y" : "2",        },{                "code" : "0",    "img" : "tree2",    "keep" : "False",    "score" : "0",    "task" : "0",    "x" : "7",    "y" : "4",        },{                "code" : "0",    "img" : "1",    "keep" : "False",    "score" : "0",    "task" : "0",    "x" : "9",    "y" : "3",        }] },        "Hotpoints" : {                        "Hotpoint" : {                "count" : "0",    "x" : "2",    "y" : "2",        }    }    }}';
 
 
 var global;
@@ -144,7 +145,13 @@ function init()
         
         
         
-        //clearWalkBlock();
+        //after we got the stage from the server:
+        var stageLoader=eval(ReceivedMapJSON);
+        alert(stageLoader.Map.Startup);
+        
+        
+        
+      
         
 }
 
