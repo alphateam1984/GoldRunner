@@ -46,6 +46,9 @@ var cancelledMovement=false;  //when true, means a window popped up and needs fr
 //characters:
 
 var player;
+var players=new Array();  //we will not use player object above anymore, because it
+//cannot hold multiple players.
+
 var enemyList=new Array();   //collect all the enemy instances.   
 var enemyAllFinished=new Array();  //length should be the same as it of enemylist.
 
@@ -1556,8 +1559,53 @@ function imageLoadFinish(flag)
 
 
 
+function loadStage(stageNumber){
+    //load a stage using an integer number of stage.
+    
+    
+    
+    
+    
+    
+    //======assume that we got the string:
+    
+    
+    //stageData is a string object that stores string data got from the backend program, in Json format.
+    var stageData='{ "Map" : { "divideX" : "10", "divideY" : "5", "bg" : "floor2", "Startup" : "var usage = %/%test%/%;", "Players" : { "Player" :[{ "x" : "0", "y" : "2", "src" : "2vdo45v", "name" : "NewPlayer", "role" : "0", "enabled" : "True", },{ "x" : "0", "y" : "4", "src" : "2vdo45v", "name" : "NewPlayer", "role" : "0", "enabled" : "True", }] }, "Blocks" : "", "Blanks" : "", "Items" : { "Item" :[{ "x" : "8", "y" : "2", "code" : "0", "task" : "0", "img" : "tree1", "keep" : "False", "score" : "0", },{ "x" : "7", "y" : "4", "code" : "0", "task" : "0", "img" : "tree2", "keep" : "False", "score" : "0", },{ "x" : "9", "y" : "3", "code" : "0", "task" : "0", "img" : "1", "keep" : "False", "score" : "0", }] }, "Hotpoints" : { "Hotpoint" : { "x" : "2", "y" : "2", "count" : "0", } } }}';
+    
+    var dataObject= new Object();
+       dataObject= eval('(' + stageData + ')');
+    
+    //get the stage object and read the general properties:
+    
+    var dx,dy,bg; //integer
+    dx=parseInt( dataObject.Map.divideX);
+    dy=parseInt( dataObject.Map.divideY);
+    
+    bg=dataObject.Map.bg; //get the bg filename.
+    
+    //get the startup script:
+    var startupScript=dataObject.Map.Startup;
+    startupScript=replaceChar(startupScript,'%/%',"'");
+    startupScript=replaceChar(startupScript,'%//%','"');    
+    
+    //read player data:
+    for(var i=0;i<dataObject.Map.Players.Player.length;i++)
+    {
+        
+        dataObject.Map.Players.Player[i];
+    }
+    
+}
 
-
+function replaceChar(input,charOriginal,charTarget)
+{
+    while(input.search(charOriginal)>=0)
+    {
+        input= input.replace(charOriginal,charTarget);    
+    }
+    return input;
+}
 
 
 
