@@ -141,13 +141,13 @@ function init()
        
        //step2: init the stage:
         currentStage=1;
-        //initStage(currentStage);
+        initStage(currentStage);
         
-        loadStage(currentStage);
+        
         
         //after we got the stage from the server:
-        //var stageLoader=eval(ReceivedMapJSON);
-        //alert(stageLoader.Map.Startup);
+        var stageLoader=eval(ReceivedMapJSON);
+        alert(stageLoader.Map.Startup);
         
         
         
@@ -352,40 +352,6 @@ function movePlayer(player,x,y)
             enemy.setVisible(true);
             enemy.setFrame(2,1);
             enemyList.push(enemy);
-    }
-    function createPlayer(x,y,skin,name,enabled,role,visible)
-    {
-        if(role==="0")
-        {
-            //player: someone we can control.
-            var player=new playerClass(x,y,"chr/player/"+skin+"_","player",name);   
-            player.setVisible(true);
-            player.setFrame(2,1);
-            player.enabled=enabled;
-            player.setVisible(visible);;
-            playerList.push(player);
-        }
-        if(role==="1")
-        {
-            //enemy:
-            var player=new playerClass(x,y,"chr/player/"+skin,"enemy",name);   
-            player.setVisible(true);
-            player.setFrame(2,1);
-            player.enabled=enabled;   
-            player.setVisible(visible);
-            enemyList.push(player);
-        }
-        if(role==="2")
-        {
-            //NRC: None-related-role
-            var player=new playerClass(x,y,"chr/player/"+skin,"nrc",name);   
-            player.setVisible(true);
-            player.setFrame(2,1);
-            player.enabled=enabled;
-            player.setVisible(visible);            
-            playerList.push(player);
-        }
-        
     }
 
 
@@ -719,11 +685,7 @@ function movePlayer(player,x,y)
         
         playerListIterator++;
         
-        if(playerListIterator===playerList.length)
-        {
-            //when all players finish walking.
-            
-        }
+
 
         
     }
@@ -1152,7 +1114,6 @@ function movePlayer(player,x,y)
         whosTurn=10;
         if(enemyList.length===0)
         {
-            playerListIterator=0;
             playerTurn();
             return ;
         }
@@ -1706,97 +1667,7 @@ function imageLoadFinish(flag)
 
 
 
-function loadStage(stageNumber){
-    //load a stage using an integer number of stage.
-    
-    
-    
-    
-    
-    
-    //======assume that we got the string:
-    
-    
-    //stageData is a string object that stores string data got from the backend program, in Json format.
-    var stageData='{ "Map" : { "divideX" : "10", "divideY" : "5", "bg" : "floor2", "Startup" : "var usage = %/%test%/%;", "Players" : { "Player" :[{ "x" : "0", "y" : "2", "src" : "2vdo45v", "name" : "NewPlayer", "role" : "0", "enabled" : "True", "visible" : "True" },{ "x" : "0", "y" : "4", "src" : "2vdo45v", "name" : "NewPlayer", "role" : "0", "enabled" : "True","visible":true }] }, "Blocks" : "", "Blanks" : "", "Items" : { "Item" :[{ "x" : "8", "y" : "2", "code" : "0", "task" : "0", "img" : "tree1", "keep" : "False", "score" : "0", },{ "x" : "7", "y" : "4", "code" : "0", "task" : "0", "img" : "tree2", "keep" : "False", "score" : "0", },{ "x" : "9", "y" : "3", "code" : "0", "task" : "0", "img" : "1", "keep" : "False", "score" : "0", }] }, "Hotpoints" : { "Hotpoint" : { "x" : "2", "y" : "2", "count" : "0", } } }}';
-    
-    var dataObject= new Object();
-       dataObject= eval('(' + stageData + ')');
-    
-    //get the stage object and read the general properties:
-    
-    var dx,dy,bg; //integer
-    dx=parseInt( dataObject.Map.divideX);
-    dy=parseInt( dataObject.Map.divideY);
-    
-    bg=dataObject.Map.bg; //get the bg filename.
-    
-    //get the startup script:
-    var startupScript=dataObject.Map.Startup;
-    startupScript=replaceChar(startupScript,'%/%',"'");
-    startupScript=replaceChar(startupScript,'%//%','"');    
-    
-    //init the map size.
-         var mainpanel=document.getElementById("maincontainer");
-         bCountX=dx;
-         bCountY=dy;
-            
-         mainpanel.style.width=bCountX*36+"px";  //resize the map
-         mainpanel.style.height=bCountY*36+"px";         
-         mainpanel.style.backgroundImage="url('tiles/"+bg+".jpg')";  //load bg
-         //initialize the grids:
-            initGrids(bCountX,bCountY);
-            
-    
-    
-    
-    
-    
-    
-    
-    //read player data:
-    for(var i=0;i<dataObject.Map.Players.Player.length;i++)
-    {
 
-        //x,y,skin,name,enabled,role,visible
-        
-        //create player base on the properties we got from the json string.
-            createPlayer(
-                    parseInt(dataObject.Map.Players.Player[i].x),
-                    parseInt(dataObject.Map.Players.Player[i].y),
-                    dataObject.Map.Players.Player[i].src,
-                    dataObject.Map.Players.Player[i].name,
-                    Boolean(dataObject.Map.Players.Player[i].enabled),
-                    dataObject.Map.Players.Player[i].role,
-                    Boolean(dataObject.Map.Players.Player[i].visible)
-                    );
-        
-        console.log("player# "+i);
-    }
-    
-    
-    
-    
-    
-        cancelledMovement=false;         
-        //showWalkBlocks(player);
-        playerListIterator=0;
-        playerTurn();
-    
-}
-
-
-
-
-
-function replaceChar(input,charOriginal,charTarget)
-{
-    while(input.search(charOriginal)>=0)
-    {
-        input= input.replace(charOriginal,charTarget);    
-    }
-    return input;
-}
 
 
 
